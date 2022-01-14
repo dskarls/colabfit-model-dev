@@ -26,6 +26,10 @@ int main(int argc, const char *argv[])
 
     std::cout << "Successfully loaded pytorch model\n";
 
+    // Set model to evaluation mode to set any dropout or batch normalization
+    // layers to evaluation mode
+    module.eval();
+
     // Create a vector of inputs.
     std::vector<torch::jit::IValue> inputs;
     auto A = torch::tensor({1.4}, torch::dtype(torch::kFloat64));
