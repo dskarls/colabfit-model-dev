@@ -30,6 +30,9 @@ int main(int argc, const char *argv[])
     // layers to evaluation mode
     module.eval();
 
+    // Turn off gradients
+    // c10::InferenceMode guard;
+
     // Create a vector of inputs.
     std::vector<torch::jit::IValue> inputs;
     auto A = torch::tensor({1.4}, torch::dtype(torch::kFloat64));
