@@ -3,7 +3,7 @@
 //#include <torch/script.h>
 #include "torch/script.h"
 
-MlModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
+MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
 {
     if (ml_model_type == ML_MODEL_PYTORCH)
     {
@@ -54,7 +54,7 @@ void PytorchModel::PushInputNode(input_tensor_element_type *input)
     }
 
     inputs_.push_back(input_tensor);
-};
+}
 
 template <typename output_arr_type>
 void PytorchModel::Run(output_arr_type *output)

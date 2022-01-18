@@ -41,6 +41,6 @@ public:
     void PushInputNode(input_tensor_element_type *);
 
     template <typename output_arr_type> void Run(output_arr_type **);
-}
+};
 
 #endif /* MLMODEL_HPP */
