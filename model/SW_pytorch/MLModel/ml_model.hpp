@@ -13,7 +13,7 @@ enum MLModelType
 class MLModel
 {
 public:
-    static MlModel *create(const char *, MLModelType);
+    static MLModel *create(const char *, MLModelType);
 
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
