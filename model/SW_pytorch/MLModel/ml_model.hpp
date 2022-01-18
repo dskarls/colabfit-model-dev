@@ -2,32 +2,71 @@
 #define MLMODEL_HPP
 
 #include <stdlib.h>
+#include <iostream>
 
-#include <torch/script.h>
+enum MLModelType
+{
+    ML_MODEL_PYTORCH,
+};
 
-/* Main wrapper class for an ML model */
+/* Factory class for creating machine learning models */
+class MLModelFactory
+{
+public:
+    /* Constructor */
+    MlModel MLModelFactory(const char *model_file_path, int ml_model_type)
+    {
+        // TODO: Make a creator method for this so the if-else logic can be
+        // pushed to that
+        if (ml_model_type == ML_MODEL_PYTORCH)
+        {
+            return PytorchModel(model_file_path);
+        }
+        else
+        {
+            // TODO: Raise an actual exception here?
+            std::cout << "Invalid model type: " << ml_model_type << std::endl;
+        }
+    }
+
+    /* Destructor */
+    ~MLModelFactory()
+    {
+        // TODO: Do we need to clean up any memory here?
+    }
+}
+
+/* Pure abstract base class for an ML model -- 'product' of the factory pattern
+ */
 class MLModel
 {
-private:
 public:
-    // Contains the path to the serialized ML model file to load
-    const char *model_path_;
+    // TODO: Should we use named inputs instead?  I believe they're required by
+    // ONNX, but not sure exactly how they work vis-a-vis exporting to a
+    // torchscript file.
+    template <typename input_tensor_element_type>
+    virtual void PushInputNode(input_tensor_element_type *input) = 0;
 
-    // TODO: Set up logging capabilities and have a log file path as a public
-    // attribute
+    template <typename output_arr_type>
+    virtual void Run(output_arr_type **output_arr) = 0;
+};
 
-    // Constructor
-    MLModel();
+// Concrete MLModel corresponding to pytorch
+class PytorchModel : public MLModel
+{
+private:
+    torch::jit::script::Module module_;
+    std::vector<torch::jit::IValue> inputs_;
+
+public:
+    const char *model_file_path_;
+
+    PytorchModel(const char *model_file_path);
 
     template <typename input_tensor_element_type>
-    void
-    SetModelInputNodeTensorData(size_t input_node_index,
-                                input_tensor_element_type *input_tensor_values);
+    void PushInputNode(input_tensor_element_type *input);
 
-    // Destructor
-    ~MLModel();
-
-    void Run();
-};
+    template <typename output_arr_type> void Run(output_arr_type **output_arr);
+}
 
 #endif /* MLMODEL_HPP */

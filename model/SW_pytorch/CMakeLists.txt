@@ -44,15 +44,15 @@ add_kim_api_model_library(
   CREATE_ROUTINE_LANGUAGE "cpp"
   )
 
-add_subdirectory(pytorchModel)
+add_subdirectory(MLModel)
 
 target_sources(${PROJECT_NAME} PRIVATE
   SW_pytorch.cpp
 )
 
-target_link_libraries("${PROJECT_NAME}" PRIVATE pytorchModel)
+target_link_libraries("${PROJECT_NAME}" PRIVATE MLModel)
 
 target_include_directories("${PROJECT_NAME}" PRIVATE
   "${PROJECT_BINARY_DIR}"
-  "${PROJECT_SOURCE_DIR}/pytorchModel"
+  "${PROJECT_SOURCE_DIR}/MLModel"
   )

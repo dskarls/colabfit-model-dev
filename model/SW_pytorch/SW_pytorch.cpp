@@ -120,7 +120,7 @@ namespace
 
             // Create ML wrapper object
             LOG_DEBUG("Creating ML framework wrapper object");
-            ml_model_ = new MLModel(model, "logger");
+            ml_model_ = new MLModelFactory(model, ML_MODEL_PYTORCH);
             LOG_DEBUG("Done creating ML framework wrapper object");
 
             // Create initial empty arrays for num_neighbors and neighbor_list
@@ -236,10 +236,8 @@ namespace
 
             // Create input tensor for coordinates from coordinates buffer
             // allocated by simulator
-            model_buffer->ml_model_->SetModelInputNodeTensorData(
-                0, particleContributing);
-            model_buffer->ml_model_->SetModelInputNodeTensorData(1,
-                                                                 coordinates);
+            model_buffer->ml_model_->PushInputNode(particleContributing);
+            model_buffer->ml_model_->PushInputNode(coordinates);
 
             // Allocate num_neighbors and neighbor_list arrays and populate.
             // These are stored in the model buffer
@@ -264,10 +262,10 @@ namespace
                 }
             }
 
-            model_buffer->ml_model_->SetModelInputNodeTensorData(
-                2, model_buffer->num_neighbors.data());
-            model_buffer->ml_model_->SetModelInputNodeTensorData(
-                3, model_buffer->neighbor_list.data());
+            model_buffer->ml_model_->PushInputNode(
+                model_buffer->num_neighbors.data());
+            model_buffer->ml_model_->PushInputNode(
+                model_buffer->neighbor_list.data());
 
             model_buffer->ml_model_->Run(&partialEnergy);
 
