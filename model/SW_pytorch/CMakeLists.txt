@@ -36,7 +36,7 @@ project(SW_pytorch LANGUAGES CXX)
 kim_api_items_setup_after_project(ITEM_TYPE "portableModel")
 
 # This model driver requires C++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 add_kim_api_model_library(
   NAME                    ${PROJECT_NAME}
