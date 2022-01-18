@@ -9,46 +9,20 @@ enum MLModelType
     ML_MODEL_PYTORCH,
 };
 
-/* Factory class for creating machine learning models */
-class MLModelFactory
-{
-public:
-    /* Constructor */
-    MlModel MLModelFactory(const char *model_file_path, int ml_model_type)
-    {
-        // TODO: Make a creator method for this so the if-else logic can be
-        // pushed to that
-        if (ml_model_type == ML_MODEL_PYTORCH)
-        {
-            return PytorchModel(model_file_path);
-        }
-        else
-        {
-            // TODO: Raise an actual exception here?
-            std::cout << "Invalid model type: " << ml_model_type << std::endl;
-        }
-    }
-
-    /* Destructor */
-    ~MLModelFactory()
-    {
-        // TODO: Do we need to clean up any memory here?
-    }
-}
-
-/* Pure abstract base class for an ML model -- 'product' of the factory pattern
- */
+/* Abstract base class for an ML model -- 'product' of the factory pattern */
 class MLModel
 {
 public:
-    // TODO: Should we use named inputs instead?  I believe they're required by
-    // ONNX, but not sure exactly how they work vis-a-vis exporting to a
+    static MlModel *create(const char *, MLModelType);
+
+    // TODO: Should we use named inputs instead?  I believe they're required
+    // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
     // torchscript file.
     template <typename input_tensor_element_type>
-    virtual void PushInputNode(input_tensor_element_type *input) = 0;
+    virtual void PushInputNode(input_tensor_element_type *) = 0;
 
     template <typename output_arr_type>
-    virtual void Run(output_arr_type **output_arr) = 0;
+    virtual void Run(output_arr_type **) = 0;
 };
 
 // Concrete MLModel corresponding to pytorch
@@ -61,12 +35,12 @@ private:
 public:
     const char *model_file_path_;
 
-    PytorchModel(const char *model_file_path);
+    PytorchModel(const char *);
 
     template <typename input_tensor_element_type>
-    void PushInputNode(input_tensor_element_type *input);
+    void PushInputNode(input_tensor_element_type *);
 
-    template <typename output_arr_type> void Run(output_arr_type **output_arr);
+    template <typename output_arr_type> void Run(output_arr_type **);
 }
 
 #endif /* MLMODEL_HPP */

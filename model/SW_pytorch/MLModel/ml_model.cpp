@@ -1,6 +1,15 @@
 #include "ml_model.hpp"
 
-#include <torch/script.h>
+//#include <torch/script.h>
+#include "torch/script.h"
+
+MlModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
+{
+    if (ml_model_type == ML_MODEL_PYTORCH)
+    {
+        return new PytorchModel(model_file_path);
+    }
+}
 
 template <typename input_tensor_element_type>
 void PytorchModel::PushInputNode(input_tensor_element_type *input)

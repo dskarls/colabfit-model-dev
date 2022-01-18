@@ -120,7 +120,7 @@ namespace
 
             // Create ML wrapper object
             LOG_DEBUG("Creating ML framework wrapper object");
-            ml_model_ = new MLModelFactory(model, ML_MODEL_PYTORCH);
+            ml_model_ = MLModel::create(model, ML_MODEL_PYTORCH);
             LOG_DEBUG("Done creating ML framework wrapper object");
 
             // Create initial empty arrays for num_neighbors and neighbor_list
