@@ -6,7 +6,7 @@ add_library(MLModel STATIC ml_model.cpp)
 # into system directories.  Delete this later.
 list(APPEND CMAKE_PREFIX_PATH "/root/libtorch/libtorch/")
 
-find_library(Torch REQUIRED)
+find_package(Torch REQUIRED)
 target_link_libraries(MLModel PRIVATE ${TORCH_LIBRARIES})
 
 # TODO: Set CXX_STANDARD target property here?
