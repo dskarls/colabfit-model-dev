@@ -19,7 +19,7 @@ def calc_sw2(A, B, p, q, sigma, cutoff, rij):
         sig_r = sigma / rij
         E2 = A * (B * sig_r ** p - sig_r ** q) * torch.exp(sigma / (rij - cutoff))
     else:
-        E2 = torch.tensor(0.0, dtype=torch.float32)
+        E2 = torch.tensor(0.0, dtype=torch.float64)
     return E2
 
 
@@ -57,7 +57,7 @@ def energy(
     Calculate Energy for a given list of coordiates, assuming first coordinate
     to be of query atom i, and remaining in the list to be neighbours.
     """
-    energy_conf = torch.tensor(0.0, dtype=torch.float32)
+    energy_conf = torch.tensor(0.0, dtype=torch.float64)
 
     # Store index to be able to traverse the neighbor list in sequence
     neigh_list_cursor = 0
@@ -120,16 +120,16 @@ class StillingerWeberLayer(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.A = nn.Parameter(torch.tensor(15.2848479197914, dtype=torch.float32))
-        self.B = nn.Parameter(torch.tensor(0.6022245584, dtype=torch.float32))
-        self.p = nn.Parameter(torch.tensor(4.0, dtype=torch.float32))
-        self.q = nn.Parameter(torch.tensor(0.0, dtype=torch.float32))
-        self.sigma = nn.Parameter(torch.tensor(2.0951, dtype=torch.float32))
-        self.gamma = nn.Parameter(torch.tensor(2.51412, dtype=torch.float32))
-        self.cutoff = nn.Parameter(torch.tensor(3.77118, dtype=torch.float32))
-        self.lam = nn.Parameter(torch.tensor(45.5322, dtype=torch.float32))
+        self.A = nn.Parameter(torch.tensor(15.2848479197914, dtype=torch.float64))
+        self.B = nn.Parameter(torch.tensor(0.6022245584, dtype=torch.float64))
+        self.p = nn.Parameter(torch.tensor(4.0, dtype=torch.float64))
+        self.q = nn.Parameter(torch.tensor(0.0, dtype=torch.float64))
+        self.sigma = nn.Parameter(torch.tensor(2.0951, dtype=torch.float64))
+        self.gamma = nn.Parameter(torch.tensor(2.51412, dtype=torch.float64))
+        self.cutoff = nn.Parameter(torch.tensor(3.77118, dtype=torch.float64))
+        self.lam = nn.Parameter(torch.tensor(45.5322, dtype=torch.float64))
         self.cos_beta0 = nn.Parameter(
-            torch.tensor(-0.333333333333333, dtype=torch.float32)
+            torch.tensor(-0.333333333333333, dtype=torch.float64)
         )
 
     def set_optim(self, to_optim):
