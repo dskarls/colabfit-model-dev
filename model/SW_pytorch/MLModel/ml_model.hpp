@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include <torch/script.h>
+
 enum MLModelType
 {
     ML_MODEL_PYTORCH,

@@ -50,7 +50,8 @@ target_sources(${PROJECT_NAME} PRIVATE
   SW_pytorch.cpp
 )
 
-target_link_libraries("${PROJECT_NAME}" PRIVATE MLModel)
+find_package(Torch REQUIRED)
+target_link_libraries("${PROJECT_NAME}" PRIVATE MLModel PRIVATE ${TORCH_LIBRARIES})
 
 target_include_directories("${PROJECT_NAME}" PRIVATE
   "${PROJECT_BINARY_DIR}"
