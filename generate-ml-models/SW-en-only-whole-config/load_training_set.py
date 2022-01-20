@@ -14,7 +14,7 @@ def load_kliff_configuration(kliff_config, cutoff, torch_tensor_output=False):
 
     num_contributing_atoms = kliff_config.get_num_atoms()
     atom_indices = np.arange(0, num_contributing_atoms)
-    particle_contributing = np.ones(num_contributing_atoms, dtype=np.int64).reshape(
+    particle_contributing = np.ones(num_contributing_atoms, dtype=np.int32).reshape(
         (1, -1)
     )
 
@@ -28,7 +28,7 @@ def load_kliff_configuration(kliff_config, cutoff, torch_tensor_output=False):
     if num_padding_atoms > 0:
         atom_indices = np.append(atom_indices, neighbor_padding_image)
         particle_contributing = np.append(
-            particle_contributing, np.zeros(num_padding_atoms, dtype=np.int64)
+            particle_contributing, np.zeros(num_padding_atoms, dtype=np.int32)
         )
 
     # collect neighbours for each atom in kliff_config
@@ -39,14 +39,14 @@ def load_kliff_configuration(kliff_config, cutoff, torch_tensor_output=False):
 
     xyz_tensor = kliff_neighbor_list.coords.astype(np.float32)
     xyz_tensor = xyz_tensor.reshape((1, -1))
-    neighbor_list = np.array(neighbor_list, dtype=np.int64).reshape((1, -1))
+    neighbor_list = np.array(neighbor_list, dtype=np.int32).reshape((1, -1))
 
     if torch_tensor_output:
         energy = torch.tensor(energy, dtype=torch.float32)
         forces = torch.from_numpy(forces)
         particle_contributing = torch.from_numpy(particle_contributing)
         xyz_tensor = torch.from_numpy(xyz_tensor)
-        num_neighbors = torch.tensor(num_neighbors, dtype=torch.int64)
+        num_neighbors = torch.tensor(num_neighbors, dtype=torch.int32)
         neighbor_list = torch.from_numpy(neighbor_list)
         neighbor_padding_image = torch.from_numpy(neighbor_padding_image)
 
