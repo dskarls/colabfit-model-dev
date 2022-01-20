@@ -20,11 +20,15 @@ public:
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
     // torchscript file.
-    template <typename input_tensor_element_type>
-    virtual void PushInputNode(input_tensor_element_type *) = 0;
 
-    template <typename output_arr_type>
-    virtual void Run(output_arr_type **) = 0;
+    // Function templates can't be used for pure virtual functions, and since
+    // PushInputNode and Run each have their own (different) support argument
+    // types, we can't use a class template.  So, we explicitly define each
+    // supporting overloading.
+    virtual void PushInputNode(int32_t *) = 0;
+    virtual void PushInputNode(double *) = 0;
+
+    virtual void Run(double*) = 0;
 };
 
 // Concrete MLModel corresponding to pytorch
@@ -39,10 +43,12 @@ public:
 
     PytorchModel(const char *);
 
-    template <typename input_tensor_element_type>
-    void PushInputNode(input_tensor_element_type *);
+    virtual void PushInputNode(int32_t *);
+    virtual void PushInputNode(double*);
 
-    template <typename output_arr_type> void Run(output_arr_type **);
+    virtual void Run(double*);
+
+    ~PytorchModel();
 };
 
 #endif /* MLMODEL_HPP */
