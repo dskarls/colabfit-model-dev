@@ -7,15 +7,6 @@ from load_training_set import load_kliff_training_set
 
 torch.set_default_dtype(torch.float)
 
-filename = sys.argv[1]
-
-# ================================================================================
-# Descriptor Generator
-
-
-# =============================================================================
-# List[List[Tensor],List[List[int]],List[List[str]],Tensor,List[List[int]],Tensor]
-
 # =============================================================================
 # Torch StillingerWeber Layer
 # =============================================================================
@@ -196,27 +187,37 @@ if __name__ == "__main__":
     SWL.set_optim(["A", "B", "gamma"])
     model = torch.jit.script(SWL)
 
-    # Load inputs for all configurations from training set
-    desc, energies, forces = load_kliff_training_set(
-        filename, cutoff=3.77118, torch_tensor_output=True
-    )
+    export_to_torchscript = True
+    export_to_onnx = False
 
-    # Pull out inputs for the first configuration
-    particle_contributing, coords, num_neighbors, neighbor_list, *_ = desc[0][:]
+    if export_to_torchscript:
+        model.save("SW_en_only.pt")
 
-    model_inputs = particle_contributing, coords, num_neighbors, neighbor_list
+    if export_to_onnx:
 
-    model(*model_inputs)
+        filename = sys.argv[1]
 
-    torch.onnx.export(
-        model,
-        args=model_inputs,
-        f="SW_en.onnx",
-        opset_version=14,
-        input_names=[
-            "particle_contributing",
-            "coords",
-            "num_neighbors",
-            "neighbor_list",
-        ],
-    )
+        # Load inputs for all configurations from training set
+        desc, energies, forces = load_kliff_training_set(
+            filename, cutoff=3.77118, torch_tensor_output=True
+        )
+
+        # Pull out inputs for the first configuration
+        particle_contributing, coords, num_neighbors, neighbor_list, *_ = desc[0][:]
+
+        model_inputs = particle_contributing, coords, num_neighbors, neighbor_list
+
+        model(*model_inputs)
+
+        torch.onnx.export(
+            model,
+            args=model_inputs,
+            f="SW_en.onnx",
+            opset_version=14,
+            input_names=[
+                "particle_contributing",
+                "coords",
+                "num_neighbors",
+                "neighbor_list",
+            ],
+        )
