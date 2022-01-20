@@ -267,7 +267,7 @@ namespace
             model_buffer->ml_model_->PushInputNode(
                 model_buffer->neighbor_list.data());
 
-            model_buffer->ml_model_->Run(&partialEnergy);
+            model_buffer->ml_model_->Run(partialEnergy);
 
             // Return false to indicate no errors occurred
             return false;
@@ -312,11 +312,11 @@ namespace
 
         // The number of neighbors for each atom in the entire current
         // configuration
-        std::vector<int64_t> num_neighbors;
+        std::vector<int32_t> num_neighbors;
 
         // Raveled neighbor list for each atom in the entire current
         // configuration
-        std::vector<int64_t> neighbor_list;
+        std::vector<int32_t> neighbor_list;
 
         double influenceDistance_;
         double cutoff_;
