@@ -29,6 +29,8 @@ public:
     virtual void PushInputNode(double *) = 0;
 
     virtual void Run(double*) = 0;
+
+    virtual ~MLModel();
 };
 
 // Concrete MLModel corresponding to pytorch
