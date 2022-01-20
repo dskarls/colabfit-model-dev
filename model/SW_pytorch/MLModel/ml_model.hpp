@@ -30,7 +30,7 @@ public:
 
     virtual void Run(double*) = 0;
 
-    virtual ~MLModel();
+    virtual ~MLModel() {};
 };
 
 // Concrete MLModel corresponding to pytorch
