@@ -395,7 +395,8 @@ extern "C"
             new KIMMLModel(modelCreate, requestedLengthUnit,
                            requestedEnergyUnit, requestedChargeUnit,
                            requestedTemperatureUnit, requestedTimeUnit, &error);
-        modelCreate->SetModelBufferPointer((void **)&model_buffer);
+
+        modelCreate->SetModelBufferPointer(static_cast<void *>(model_buffer));
 
         if (error)
         {
