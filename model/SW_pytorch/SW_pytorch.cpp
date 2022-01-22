@@ -391,7 +391,7 @@ extern "C"
 
         // Create model class object.  This will allocate a ML wrapper object
         // and store it in an instance attr on the model class object.
-        KIMMLModel *model_buffer =
+        KIMMLModel * const model_buffer =
             new KIMMLModel(modelCreate, requestedLengthUnit,
                            requestedEnergyUnit, requestedChargeUnit,
                            requestedTemperatureUnit, requestedTimeUnit, &error);
