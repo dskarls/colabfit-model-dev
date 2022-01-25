@@ -14,9 +14,10 @@ def load_kliff_configuration(kliff_config, cutoff, torch_tensor_output=False):
 
     num_contributing_atoms = kliff_config.get_num_atoms()
     atom_indices = np.arange(0, num_contributing_atoms)
-    particle_contributing = np.ones(num_contributing_atoms, dtype=np.int32).reshape(
-        (1, -1)
-    )
+    #particle_contributing = np.ones(num_contributing_atoms, dtype=np.int32).reshape(
+    #    (1, -1)
+    #)
+    particle_contributing = np.ones(num_contributing_atoms, dtype=np.int32)
 
     xyz_tensor = []
     num_neighbors = []
@@ -38,8 +39,11 @@ def load_kliff_configuration(kliff_config, cutoff, torch_tensor_output=False):
         num_neighbors.append(len(atom_i_neighbor_indices_unwrapped))
 
     xyz_tensor = kliff_neighbor_list.coords.astype(np.float32)
-    xyz_tensor = xyz_tensor.reshape((1, -1))
-    neighbor_list = np.array(neighbor_list, dtype=np.int32).reshape((1, -1))
+    #xyz_tensor = xyz_tensor.reshape((1, -1))
+    #neighbor_list = np.array(neighbor_list, dtype=np.int32).reshape((1, -1))
+
+    xyz_tensor = xyz_tensor.ravel()
+    neighbor_list = np.array(neighbor_list, dtype=np.int32)
 
     if torch_tensor_output:
         energy = torch.tensor(energy, dtype=torch.float32)
