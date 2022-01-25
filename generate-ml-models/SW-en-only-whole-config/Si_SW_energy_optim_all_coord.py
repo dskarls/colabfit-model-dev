@@ -39,10 +39,10 @@ def calc_sw3(
 
 @torch.jit.script
 def energy(
-    particle_contributing: torch.IntTensor,
+    particle_contributing: torch.Tensor,
     coords: torch.Tensor,
-    num_neighbors: torch.IntTensor,
-    neighbor_list: torch.IntTensor,
+    num_neighbors: torch.Tensor,
+    neighbor_list: torch.Tensor,
     A: torch.Tensor,
     B: torch.Tensor,
     p: torch.Tensor,
