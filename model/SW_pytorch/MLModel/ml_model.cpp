@@ -41,7 +41,7 @@ void PytorchModel::PushInputNode(double *input, int size)
     inputs_.push_back(input_tensor);
 }
 
-void PytorchModel::Run(double * &output)
+void PytorchModel::Run(double *output)
 {
     // Run ML model's `forward` method and convert the IValue returned to a
     // tensor
@@ -52,7 +52,7 @@ void PytorchModel::Run(double * &output)
     // make Run() take no parameters, and instead define separate methods for
     // accessing each of the outputs of the ML model.
 
-    output = output_tensor.data_ptr<double>();
+    *output = *output_tensor.data_ptr<double>();
 }
 
 PytorchModel::PytorchModel(const char *model_file_path)

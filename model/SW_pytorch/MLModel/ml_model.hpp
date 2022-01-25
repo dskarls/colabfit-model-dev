@@ -28,7 +28,7 @@ public:
     virtual void PushInputNode(int*, int) = 0;
     virtual void PushInputNode(double *, int) = 0;
 
-    virtual void Run(double* &) = 0;
+    virtual void Run(double*) = 0;
 
     virtual ~MLModel() {};
 };
@@ -48,7 +48,7 @@ public:
     void PushInputNode(int*, int);
     void PushInputNode(double*, int);
 
-    void Run(double* &);
+    void Run(double*);
 
     ~PytorchModel();
 };
