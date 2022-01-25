@@ -85,27 +85,32 @@ def energy(
             xyz_j = coords[(nli[atom_j]) * 3 : ((nli[atom_j]) + 1) * 3]
             rij = xyz_j - xyz_i
             norm_rij = (rij[0] ** 2 + rij[1] ** 2 + rij[2] ** 2) ** 0.5
-            E2 = calc_sw2(A, B, p, q, sigma, cutoff, norm_rij)
-            energy_conf = energy_conf + 0.5 * E2
-            for atom_k in range(atom_j + 1, num_neigh_i):
-                xyz_k = coords[(nli[atom_k]) * 3 : ((nli[atom_k]) + 1) * 3]
-                rik = xyz_k - xyz_i
-                norm_rik = (rik[0] ** 2 + rik[1] ** 2 + rik[2] ** 2) ** 0.5
-                rjk = xyz_k - xyz_j
-                norm_rjk = (rjk[0] ** 2 + rjk[1] ** 2 + rjk[2] ** 2) ** 0.5
-                E3 = calc_sw3(
-                    lam,
-                    cos_beta0,
-                    gamma,
-                    gamma,
-                    cutoff,
-                    cutoff,
-                    cutoff,
-                    norm_rij,
-                    norm_rik,
-                    norm_rjk,
-                )
-                energy_conf = energy_conf + E3
+
+            if norm_rij < cutoff:
+                E2 = calc_sw2(A, B, p, q, sigma, cutoff, norm_rij)
+                energy_conf = energy_conf + 0.5 * E2
+
+                for atom_k in range(atom_j + 1, num_neigh_i):
+                    xyz_k = coords[(nli[atom_k]) * 3 : ((nli[atom_k]) + 1) * 3]
+                    rik = xyz_k - xyz_i
+                    norm_rik = (rik[0] ** 2 + rik[1] ** 2 + rik[2] ** 2) ** 0.5
+
+                    if norm_rik < cutoff:
+                        rjk = xyz_k - xyz_j
+                        norm_rjk = (rjk[0] ** 2 + rjk[1] ** 2 + rjk[2] ** 2) ** 0.5
+                        E3 = calc_sw3(
+                            lam,
+                            cos_beta0,
+                            gamma,
+                            gamma,
+                            cutoff,
+                            cutoff,
+                            cutoff,
+                            norm_rij,
+                            norm_rik,
+                            norm_rjk,
+                        )
+                        energy_conf = energy_conf + E3
 
     return energy_conf
 
