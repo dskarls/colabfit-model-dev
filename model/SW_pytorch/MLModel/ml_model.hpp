@@ -25,8 +25,8 @@ public:
     // PushInputNode and Run each have their own (different) support argument
     // types, we can't use a class template.  So, we explicitly define each
     // supporting overloading.
-    virtual void PushInputNode(int32_t *) = 0;
-    virtual void PushInputNode(double *) = 0;
+    virtual void PushInputNode(int*, int) = 0;
+    virtual void PushInputNode(double *, int) = 0;
 
     virtual void Run(double*) = 0;
 
@@ -45,8 +45,8 @@ public:
 
     PytorchModel(const char *);
 
-    virtual void PushInputNode(int32_t *);
-    virtual void PushInputNode(double*);
+    void PushInputNode(int*, int);
+    void PushInputNode(double*, int);
 
     virtual void Run(double*);
 

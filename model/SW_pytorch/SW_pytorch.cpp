@@ -236,8 +236,8 @@ namespace
 
             // Create input tensor for coordinates from coordinates buffer
             // allocated by simulator
-            model_buffer->ml_model_->PushInputNode(particleContributing);
-            model_buffer->ml_model_->PushInputNode(coordinates);
+            model_buffer->ml_model_->PushInputNode(particleContributing, numberOfParticles);
+            model_buffer->ml_model_->PushInputNode(coordinates, 3*numberOfParticles);
 
             // Allocate num_neighbors and neighbor_list arrays and populate.
             // These are stored in the model buffer
@@ -262,10 +262,11 @@ namespace
                 }
             }
 
+            // FIXME: Should this be .capacity() instead of .size()?
             model_buffer->ml_model_->PushInputNode(
-                model_buffer->num_neighbors.data());
+                model_buffer->num_neighbors.data(), model_buffer->num_neighbors.size());
             model_buffer->ml_model_->PushInputNode(
-                model_buffer->neighbor_list.data());
+                model_buffer->neighbor_list.data(), model_buffer->neighbor_list.size());
 
             model_buffer->ml_model_->Run(partialEnergy);
 
@@ -312,11 +313,11 @@ namespace
 
         // The number of neighbors for each atom in the entire current
         // configuration
-        std::vector<int32_t> num_neighbors;
+        std::vector<int> num_neighbors;
 
         // Raveled neighbor list for each atom in the entire current
         // configuration
-        std::vector<int32_t> neighbor_list;
+        std::vector<int> neighbor_list;
 
         double influenceDistance_;
         double cutoff_;
@@ -374,7 +375,7 @@ namespace
             ier = false;
             return ier;
         }
-    };
+    }; // End class definition
 } // End anonymous namespace
 
 extern "C"
