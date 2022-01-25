@@ -236,8 +236,10 @@ namespace
 
             // Create input tensor for coordinates from coordinates buffer
             // allocated by simulator
-            model_buffer->ml_model_->PushInputNode(particleContributing, numberOfParticles);
-            model_buffer->ml_model_->PushInputNode(coordinates, 3*numberOfParticles);
+            model_buffer->ml_model_->PushInputNode(particleContributing,
+                                                   numberOfParticles);
+            model_buffer->ml_model_->PushInputNode(coordinates,
+                                                   3 * numberOfParticles);
 
             // Allocate num_neighbors and neighbor_list arrays and populate.
             // These are stored in the model buffer
@@ -264,9 +266,11 @@ namespace
 
             // FIXME: Should this be .capacity() instead of .size()?
             model_buffer->ml_model_->PushInputNode(
-                model_buffer->num_neighbors.data(), model_buffer->num_neighbors.size());
+                model_buffer->num_neighbors.data(),
+                model_buffer->num_neighbors.size());
             model_buffer->ml_model_->PushInputNode(
-                model_buffer->neighbor_list.data(), model_buffer->neighbor_list.size());
+                model_buffer->neighbor_list.data(),
+                model_buffer->neighbor_list.size());
 
             model_buffer->ml_model_->Run(partialEnergy);
 
@@ -392,7 +396,7 @@ extern "C"
 
         // Create model class object.  This will allocate a ML wrapper object
         // and store it in an instance attr on the model class object.
-        KIMMLModel * const model_buffer =
+        KIMMLModel *const model_buffer =
             new KIMMLModel(modelCreate, requestedLengthUnit,
                            requestedEnergyUnit, requestedChargeUnit,
                            requestedTemperatureUnit, requestedTimeUnit, &error);

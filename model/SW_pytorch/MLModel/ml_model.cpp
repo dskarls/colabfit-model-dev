@@ -19,7 +19,8 @@ void PytorchModel::PushInputNode(int *input, int size)
 
     // FIXME: This will fail if the compiler implementation isn't using 4-byte
     // integers.  Should use sizeof(int) here with some logic here
-    auto input_tensor = torch::from_blob(input, {size}, torch::dtype(torch::kInt32));
+    auto input_tensor =
+        torch::from_blob(input, {size}, torch::dtype(torch::kInt32));
 
     inputs_.push_back(input_tensor);
 }
@@ -34,7 +35,8 @@ void PytorchModel::PushInputNode(double *input, int size)
     // NOTE: Support for bool input types has not been added below because of
     // C++'s special handling of vectors of bools that causes various issues,
     // e.g. instantiating this method template with bool will fail.
-    auto input_tensor = torch::from_blob(input, {size}, torch::dtype(torch::kFloat64));
+    auto input_tensor =
+        torch::from_blob(input, {size}, torch::dtype(torch::kFloat64));
 
     inputs_.push_back(input_tensor);
 }
