@@ -70,40 +70,25 @@ def energy(
             continue
 
         # Coordinates of atom i
-        #xyz_i = coords[0, atom_i * 3 : (atom_i + 1) * 3]
         xyz_i = coords[atom_i * 3 : (atom_i + 1) * 3]
-        #print(f"coords.shape = {coords.shape}")
-        #print(f"atom_i*3 = {atom_i*3}")
-        #print(f"(atom_i+1)*3 = {(atom_i+1)*3}")
-        print(f"Encountered atom {atom_i} with coords xyz_i = {xyz_i}")
 
         num_neigh_i = int(num_neighbors[atom_i])
 
         neigh_i_begin = neigh_list_cursor
         neigh_i_end = neigh_i_begin + num_neigh_i
 
-        #nli = neighbor_list[0, torch.arange(neigh_i_begin, neigh_i_end)]
-        #print(torch.arange(neigh_i_begin, neigh_i_end))
-        #print(neighbor_list)
         nli = neighbor_list[torch.arange(neigh_i_begin, neigh_i_end)]
 
         neigh_list_cursor = neigh_i_end
 
-        print(f" Traversing the {num_neigh_i} neighbors of atom i={atom_i}")
         for atom_j in range(num_neigh_i):
-            #xyz_j = coords[0, (nli[atom_j]) * 3 : ((nli[atom_j]) + 1) * 3]
             xyz_j = coords[(nli[atom_j]) * 3 : ((nli[atom_j]) + 1) * 3]
-            print(f"  Neighbor j={atom_j} has coords xyz_j = {xyz_j}")
             rij = xyz_j - xyz_i
             norm_rij = (rij[0] ** 2 + rij[1] ** 2 + rij[2] ** 2) ** 0.5
             E2 = calc_sw2(A, B, p, q, sigma, cutoff, norm_rij)
             energy_conf = energy_conf + 0.5 * E2
             for atom_k in range(atom_j + 1, num_neigh_i):
-                #xyz_k = coords[0, (nli[atom_k]) * 3 : ((nli[atom_k]) + 1) * 3]
                 xyz_k = coords[(nli[atom_k]) * 3 : ((nli[atom_k]) + 1) * 3]
-                #print(f"xyz_k.shape = {xyz_k.shape}")
-                print(f"    Neighbor k={atom_k} has coords xyz_k = {xyz_k}")
-
                 rik = xyz_k - xyz_i
                 norm_rik = (rik[0] ** 2 + rik[1] ** 2 + rik[2] ** 2) ** 0.5
                 rjk = xyz_k - xyz_j
