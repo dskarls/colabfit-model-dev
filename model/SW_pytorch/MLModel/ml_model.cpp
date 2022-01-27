@@ -18,8 +18,7 @@ void PytorchModel::PushInputNode(int *input, int size)
     // TODO: Is it possible/appropriate to use a type cast for this?
 
     // Get the size used by 'int' on this platform
-    std::size_t platform_size_int;
-    platform_size_int = sizeof(int);
+    const std::size_t platform_size_int = sizeof(int);
 
     torch::Tensor input_tensor;
 
