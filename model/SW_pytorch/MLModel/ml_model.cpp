@@ -17,10 +17,32 @@ void PytorchModel::PushInputNode(int *input, int size)
     // explicit instantiations for all possible types
     // TODO: Is it possible/appropriate to use a type cast for this?
 
-    // FIXME: This will fail if the compiler implementation isn't using 4-byte
-    // integers.  Should use sizeof(int) here with some logic here
-    auto input_tensor =
-        torch::from_blob(input, {size}, torch::dtype(torch::kInt32));
+    // Get the size used by 'int' on this platform
+    std::size_t platform_size_int;
+    platform_size_int = sizeof(int);
+
+    torch::Tensor input_tensor;
+
+    if (platform_size_int == 1)
+    {
+        input_tensor =
+            torch::from_blob(input, {size}, torch::dtype(torch::kInt8));
+    }
+    else if (platform_size_int == 2)
+    {
+        input_tensor =
+            torch::from_blob(input, {size}, torch::dtype(torch::kInt16));
+    }
+    else if (platform_size_int == 4)
+    {
+        input_tensor =
+            torch::from_blob(input, {size}, torch::dtype(torch::kInt32));
+    }
+    else if (platform_size_int == 8)
+    {
+        input_tensor =
+            torch::from_blob(input, {size}, torch::dtype(torch::kInt64));
+    }
 
     inputs_.push_back(input_tensor);
 }
