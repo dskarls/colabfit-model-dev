@@ -170,7 +170,9 @@ class StillingerWeberLayer(nn.Module):
             self.lam,
             self.cos_beta0,
         )
-        return total_conf_energy
+
+        forces = self.forces(total_conf_energy, coords)
+        return total_conf_energy, forces
 
     @torch.jit.export
     def forces(self, energy: torch.Tensor, coords: torch.Tensor):
