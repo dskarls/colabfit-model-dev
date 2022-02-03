@@ -25,12 +25,12 @@ public:
     // PushInputNode and Run each have their own (different) support argument
     // types, we can't use a class template.  So, we explicitly define each
     // supporting overloading.
-    virtual void PushInputNode(int*, int) = 0;
-    virtual void PushInputNode(double *, int) = 0;
+    virtual void PushInputNode(int *, int, bool requires_grad = false) = 0;
+    virtual void PushInputNode(double *, int, bool requires_grad = false) = 0;
 
-    virtual void Run(double*) = 0;
+    virtual void Run(double *, double *) = 0;
 
-    virtual ~MLModel() {};
+    virtual ~MLModel(){};
 };
 
 // Concrete MLModel corresponding to pytorch
@@ -45,10 +45,10 @@ public:
 
     PytorchModel(const char *);
 
-    void PushInputNode(int*, int);
-    void PushInputNode(double*, int);
+    void PushInputNode(int *, int, bool requires_grad = false);
+    void PushInputNode(double *, int, bool requires_grad = false);
 
-    void Run(double*);
+    void Run(double *, double *);
 
     ~PytorchModel();
 };

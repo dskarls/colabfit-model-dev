@@ -116,7 +116,7 @@ namespace
 
             // FIXME: Once this is a model driver, read the parameter file from
             // the parameterized model
-            const char *model = "SW_en_only.pt";
+            const char *model = "SW_en_and_forces.pt";
 
             // Create ML wrapper object
             LOG_DEBUG("Creating ML framework wrapper object");
@@ -190,30 +190,30 @@ namespace
             double *partialEnergy;
             int numberOfNeighbors;
             int const *neighbors;
-            // double * partialForces;
+            double *partialForces;
             KIMMLModel *model_buffer;
 
             modelCompute->GetModelBufferPointer(
                 reinterpret_cast<void **>(&model_buffer));
 
-            int error =
-                modelComputeArguments->GetArgumentPointer(
-                    KIM::COMPUTE_ARGUMENT_NAME::numberOfParticles,
-                    &numberOfParticlesPointer) ||
-                modelComputeArguments->GetArgumentPointer(
-                    KIM::COMPUTE_ARGUMENT_NAME::particleSpeciesCodes,
-                    &particleSpeciesCodes) ||
-                modelComputeArguments->GetArgumentPointer(
-                    KIM::COMPUTE_ARGUMENT_NAME::particleContributing,
-                    &particleContributing) ||
-                modelComputeArguments->GetArgumentPointer(
-                    KIM::COMPUTE_ARGUMENT_NAME::coordinates,
-                    (double const **)&coordinates) ||
-                modelComputeArguments->GetArgumentPointer(
-                    KIM::COMPUTE_ARGUMENT_NAME::partialEnergy, &partialEnergy);
-            //|| modelComputeArguments->GetArgumentPointer(
-            //    KIM::COMPUTE_ARGUMENT_NAME::partialForces,
-            //    (double const **) &partialForces);
+            int error = modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::numberOfParticles,
+                            &numberOfParticlesPointer) ||
+                        modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::particleSpeciesCodes,
+                            &particleSpeciesCodes) ||
+                        modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::particleContributing,
+                            &particleContributing) ||
+                        modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::coordinates,
+                            (double const **)&coordinates) ||
+                        modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::partialEnergy,
+                            &partialEnergy) ||
+                        modelComputeArguments->GetArgumentPointer(
+                            KIM::COMPUTE_ARGUMENT_NAME::partialForces,
+                            (double const **)&partialForces);
 
             if (error)
             {
@@ -230,8 +230,6 @@ namespace
             // - contributing
             // - numberOfParticles?
 
-            // initialize energy and forces
-            *partialEnergy = 0.0;
             // int const extent = numberOfParticles * DIMENSION;
 
             // Create input tensor for coordinates from coordinates buffer
@@ -239,7 +237,7 @@ namespace
             model_buffer->ml_model_->PushInputNode(particleContributing,
                                                    numberOfParticles);
             model_buffer->ml_model_->PushInputNode(coordinates,
-                                                   3 * numberOfParticles);
+                                                   3 * numberOfParticles, true);
 
             // Allocate num_neighbors and neighbor_list arrays and populate.
             // These are stored in the model buffer
@@ -272,7 +270,7 @@ namespace
                 model_buffer->neighbor_list.data(),
                 model_buffer->neighbor_list.size());
 
-            model_buffer->ml_model_->Run(partialEnergy);
+            model_buffer->ml_model_->Run(partialEnergy, partialForces);
 
             // Return false to indicate no errors occurred
             return false;
@@ -289,10 +287,7 @@ namespace
                             KIM::SUPPORT_STATUS::required) ||
                         modelComputeArgumentsCreate->SetArgumentSupportStatus(
                             KIM::COMPUTE_ARGUMENT_NAME::partialForces,
-                            KIM::SUPPORT_STATUS::notSupported);
-            // TODO: Set forces as supported once we find a way to
-            // implement them in pytorch in an exportable way (via
-            // autograd)
+                            KIM::SUPPORT_STATUS::required);
 
             // register callbacks
             //

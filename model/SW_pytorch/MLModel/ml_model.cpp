@@ -10,7 +10,7 @@ MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
     }
 }
 
-void PytorchModel::PushInputNode(int *input, int size)
+void PytorchModel::PushInputNode(int *input, int size, bool requires_grad)
 {
     // TODO: Move this if-else block for type checking to its own private
     // method? This would require making a template for it though and making
@@ -43,10 +43,15 @@ void PytorchModel::PushInputNode(int *input, int size)
             torch::from_blob(input, {size}, torch::dtype(torch::kInt64));
     }
 
+    if (requires_grad)
+    {
+        input_tensor.requires_grad_();
+    }
+
     inputs_.push_back(input_tensor);
 }
 
-void PytorchModel::PushInputNode(double *input, int size)
+void PytorchModel::PushInputNode(double *input, int size, bool requires_grad)
 {
     // TODO: Move this if-else block for type checking to its own private
     // method? This would require making a template for it though and making
@@ -59,21 +64,35 @@ void PytorchModel::PushInputNode(double *input, int size)
     auto input_tensor =
         torch::from_blob(input, {size}, torch::dtype(torch::kFloat64));
 
+    if (requires_grad)
+    {
+        input_tensor.requires_grad_();
+    }
+
     inputs_.push_back(input_tensor);
 }
 
-void PytorchModel::Run(double *output)
+void PytorchModel::Run(double *energy, double *forces)
 {
-    // Run ML model's `forward` method and convert the IValue returned to a
-    // tensor
-    torch::Tensor output_tensor = module_.forward(inputs_).toTensor();
+    // Run ML model's `forward` method and retrieve outputs as tuple
+    const auto output_tensor_list =
+        module_.forward(inputs_).toTuple()->elements();
+
+    // Copy value of energy from first tensor outputted by model
+    *energy = *output_tensor_list[0].toTensor().data_ptr<double>();
+
+    auto torch_forces = output_tensor_list[1].toTensor();
+    auto force_accessor = torch_forces.accessor<double, 1>();
+    for (int atom_count = 0; atom_count < force_accessor.size(0); ++atom_count)
+    {
+        forces[atom_count] = force_accessor[atom_count];
+    }
+    // torch::Tensor output_tensor = module_.forward(inputs_).toTuple();
 
     // FIXME: Make this work for more than a single scalar output -- each
     // output can presumably have a different type, too.  This may lead us to
     // make Run() take no parameters, and instead define separate methods for
     // accessing each of the outputs of the ML model.
-
-    *output = *output_tensor.data_ptr<double>();
 }
 
 PytorchModel::PytorchModel(const char *model_file_path)
