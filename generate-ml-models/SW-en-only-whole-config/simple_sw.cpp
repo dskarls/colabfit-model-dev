@@ -2,7 +2,7 @@
 #include<vector>
 #include<fstream>
 #include<torch/script.h>
-#include<torch/csrc/autograd/autograd.h> 
+#include<torch/csrc/autograd/autograd.h>
 
 using namespace std;
 
@@ -42,7 +42,7 @@ int main(int argc, char const *argv[])
         iofile >> num1;
     }
     iofile.close();
-    
+
     iofile.open(data_folder+"/neighbor_list.txt");
     iofile >> num2;
     while (!iofile.eof()) {
@@ -50,7 +50,7 @@ int main(int argc, char const *argv[])
         iofile >> num2;
     }
     iofile.close();
- 
+
     iofile.open(data_folder+"/num_neighbors.txt");
     iofile >> num2;
     while (!iofile.eof()) {
@@ -89,7 +89,6 @@ int main(int argc, char const *argv[])
     nn_tensor = torch::from_blob(num_neighbors.data(), num_neighbors.size(), opts);
     pc_tensor = torch::from_blob(particle_contributing.data(), particle_contributing.size(), opts);
     opts = torch::TensorOptions().dtype(torch::kFloat64);
-    array_size[1]= static_cast<int64_t>(coords.size());
     coords_tensor = torch::from_blob(coords.data(), coords.size(), opts);
     coords_tensor.requires_grad_(true);
     cout<<"Gradients Enabled: " <<coords_tensor.requires_grad()<< endl;
