@@ -199,7 +199,7 @@ if __name__ == "__main__":
     export_to_onnx = False
 
     if export_to_torchscript:
-        model.save("SW_en_only.pt")
+        model.save("SW_energy_and_forces.pt")
 
     if export_to_onnx:
 
@@ -220,7 +220,7 @@ if __name__ == "__main__":
         torch.onnx.export(
             model,
             args=model_inputs,
-            f="SW_en.onnx",
+            f="SW_energy_and_forces.onnx",
             opset_version=14,
             input_names=[
                 "particle_contributing",
