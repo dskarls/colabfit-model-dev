@@ -116,7 +116,7 @@ namespace
 
             // FIXME: Once this is a model driver, read the parameter file from
             // the parameterized model
-            const char *model = "SW_en_and_forces.pt";
+            const char *model = "SW_energy_and_forces.pt";
 
             // Create ML wrapper object
             LOG_DEBUG("Creating ML framework wrapper object");
