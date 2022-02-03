@@ -179,7 +179,7 @@ class StillingerWeberLayer(nn.Module):
 
     @torch.jit.export
     def forces(self, energy: torch.Tensor, coords: torch.Tensor):
-        forces = torch.autograd.grad([energy], [coords], create_graph=True)[0]
+        forces = torch.autograd.grad([-energy], [coords], create_graph=True)[0]
         if forces is not None:
             return forces
         else:
