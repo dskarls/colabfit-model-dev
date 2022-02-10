@@ -10,7 +10,8 @@ MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
     }
 }
 
-void PytorchModel::PushInputNode(int *input, int size, bool requires_grad)
+void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
+                                bool requires_grad)
 {
     // TODO: Move this if-else block for type checking to its own private
     // method? This would require making a template for it though and making
@@ -48,10 +49,11 @@ void PytorchModel::PushInputNode(int *input, int size, bool requires_grad)
         input_tensor.requires_grad_();
     }
 
-    inputs_.push_back(input_tensor);
+    model_inputs_[model_input_index] = input_tensor;
 }
 
-void PytorchModel::PushInputNode(double *input, int size, bool requires_grad)
+void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
+                                bool requires_grad)
 {
     // TODO: Move this if-else block for type checking to its own private
     // method? This would require making a template for it though and making
@@ -69,14 +71,14 @@ void PytorchModel::PushInputNode(double *input, int size, bool requires_grad)
         input_tensor.requires_grad_();
     }
 
-    inputs_.push_back(input_tensor);
+    model_inputs_[model_input_index] = input_tensor;
 }
 
 void PytorchModel::Run(double *energy, double *forces)
 {
     // Run ML model's `forward` method and retrieve outputs as tuple
     const auto output_tensor_list =
-        module_.forward(inputs_).toTuple()->elements();
+        module_.forward(model_inputs_).toTuple()->elements();
 
     // Copy value of energy from first tensor outputted by model
     *energy = *output_tensor_list[0].toTensor().data_ptr<double>();
@@ -87,7 +89,7 @@ void PytorchModel::Run(double *energy, double *forces)
     {
         forces[atom_count] = force_accessor[atom_count];
     }
-    // torch::Tensor output_tensor = module_.forward(inputs_).toTuple();
+    // torch::Tensor output_tensor = module_.forward(model_inputs_).toTuple();
 
     // FIXME: Make this work for more than a single scalar output -- each
     // output can presumably have a different type, too.  This may lead us to
@@ -106,9 +108,13 @@ PytorchModel::PytorchModel(const char *model_file_path)
     catch (const c10::Error &e)
     {
         std::cerr << "ERROR: An error occurred while attempting to load the "
-                     "pytorch model file"
-                  << std::endl;
+                     "pytorch model file from path "
+                  << model_file_path << std::endl;
     }
+
+    // Reserve size for the four fixed model inputs (particle_contributing,
+    // coordinates, number_of_neighbors, neighbor_list)
+    model_inputs_.resize(4);
 
     // Set model to evaluation mode to set any dropout or batch normalization
     // layers to evaluation mode

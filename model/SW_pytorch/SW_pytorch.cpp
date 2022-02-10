@@ -184,7 +184,7 @@ namespace
                 KIM::ModelComputeArguments const *const modelComputeArguments)
         {
             int *numberOfParticlesPointer;
-            int *particleSpeciesCodes;
+            int *particleSpeciesCodes; // FIXME: Implement species code handling
             int *particleContributing;
             double *coordinates;
             double *partialEnergy;
@@ -223,22 +223,18 @@ namespace
 
             int const numberOfParticles = *numberOfParticlesPointer;
 
-            // TODO: Create ML tensors from all necessary simulator-allocated
-            // buffers:
-            // - coordinates
-            // - species
-            // - contributing
-            // - numberOfParticles?
+            // IMPORTANT: We require a specific ordering of the arguments to
+            // the pytorch model's `forward` method:
+            //
+            //   forward(self, particle_contributing, coordinates,
+            //                 number_of_neighbors, neighbor_list)
+            //
+            model_buffer->ml_model_->SetInputNode(0, particleContributing,
+                                                  numberOfParticles);
+            model_buffer->ml_model_->SetInputNode(1, coordinates,
+                                                  3 * numberOfParticles, true);
 
-            // int const extent = numberOfParticles * DIMENSION;
-
-            // Create input tensor for coordinates from coordinates buffer
-            // allocated by simulator
-            model_buffer->ml_model_->PushInputNode(particleContributing,
-                                                   numberOfParticles);
-            model_buffer->ml_model_->PushInputNode(coordinates,
-                                                   3 * numberOfParticles, true);
-
+            // TODO: Turn this into a private method
             // Allocate num_neighbors and neighbor_list arrays and populate.
             // These are stored in the model buffer
             for (int atom_i = 0; atom_i < numberOfParticles; ++atom_i)
@@ -262,14 +258,19 @@ namespace
                 }
             }
 
-            // FIXME: Should this be .capacity() instead of .size()?
-            model_buffer->ml_model_->PushInputNode(
-                model_buffer->num_neighbors.data(),
+            model_buffer->ml_model_->SetInputNode(
+                2, model_buffer->num_neighbors.data(),
                 model_buffer->num_neighbors.size());
-            model_buffer->ml_model_->PushInputNode(
-                model_buffer->neighbor_list.data(),
+            model_buffer->ml_model_->SetInputNode(
+                3, model_buffer->neighbor_list.data(),
                 model_buffer->neighbor_list.size());
 
+            // TODO: Generalize the Run method so that we can get more than a
+            // hard-coded set of outputs back?
+
+            // IMPORTANT: We also require that the pytorch model's `forward`
+            // method return a tuple where the energy is the first entry and
+            // the forces are the second
             model_buffer->ml_model_->Run(partialEnergy, partialForces);
 
             // Return false to indicate no errors occurred

@@ -15,20 +15,23 @@ enum MLModelType
 class MLModel
 {
 public:
-    static MLModel *create(const char *, MLModelType);
+    static MLModel *create(const char * /*model_file_path*/,
+                           MLModelType /*ml_model_type*/);
 
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
     // torchscript file.
 
     // Function templates can't be used for pure virtual functions, and since
-    // PushInputNode and Run each have their own (different) support argument
+    // SetInputNode and Run each have their own (different) support argument
     // types, we can't use a class template.  So, we explicitly define each
-    // supporting overloading.
-    virtual void PushInputNode(int *, int, bool requires_grad = false) = 0;
-    virtual void PushInputNode(double *, int, bool requires_grad = false) = 0;
+    // supported overloading.
+    virtual void SetInputNode(int /*model_input_index*/, int * /*input*/,
+                              int /*size*/, bool requires_grad = false) = 0;
+    virtual void SetInputNode(int /*model_input_index*/, double * /*input*/,
+                              int /*size*/, bool requires_grad = false) = 0;
 
-    virtual void Run(double *, double *) = 0;
+    virtual void Run(double * /*energy*/, double * /*forces*/) = 0;
 
     virtual ~MLModel(){};
 };
@@ -38,17 +41,19 @@ class PytorchModel : public MLModel
 {
 private:
     torch::jit::script::Module module_;
-    std::vector<torch::jit::IValue> inputs_;
+    std::vector<torch::jit::IValue> model_inputs_;
 
 public:
     const char *model_file_path_;
 
-    PytorchModel(const char *);
+    PytorchModel(const char * /*model_file_path*/);
 
-    void PushInputNode(int *, int, bool requires_grad = false);
-    void PushInputNode(double *, int, bool requires_grad = false);
+    void SetInputNode(int /*model_input_index*/, int * /*input*/, int /*size*/,
+                      bool requires_grad = false);
+    void SetInputNode(int /*model_input_index*/, double * /*input*/,
+                      int /*size*/, bool requires_grad = false);
 
-    void Run(double *, double *);
+    void Run(double * /*energy*/, double * /*forces*/);
 
     ~PytorchModel();
 };
