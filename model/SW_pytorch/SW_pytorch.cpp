@@ -188,8 +188,6 @@ namespace
             int *particleContributing;
             double *coordinates;
             double *partialEnergy;
-            int numberOfNeighbors;
-            int const *neighbors;
             double *partialForces;
             KIMMLModel *model_buffer;
 
@@ -234,32 +232,8 @@ namespace
             model_buffer->ml_model_->SetInputNode(1, coordinates,
                                                   3 * numberOfParticles, true);
 
-            // TODO: Turn this into a private method
-            // Clear num_neighbors and neighbor_list arrays in model buffer and
-            // populate.
-            model_buffer->num_neighbors_.clear();
-            model_buffer->neighbor_list_.clear();
-
-            for (int atom_i = 0; atom_i < numberOfParticles; ++atom_i)
-            {
-                // Get number of neighbors for this atom and concatenate it onto
-                // the global number-of-neighbors list.  Then, concatenate its
-                // actual neighbors onto the global neighbor list
-                modelComputeArguments->GetNeighborList(
-                    0, atom_i, &numberOfNeighbors, &neighbors);
-
-                // FIXME: Automatic vector resizing is probably slow compared to
-                // doing a doubling of the underlying array size ourselves!
-                model_buffer->num_neighbors_.push_back(numberOfNeighbors);
-
-                for (int neigh = 0; neigh < numberOfNeighbors; ++neigh)
-                {
-                    // FIXME: Automatic vector resizing is probably slow
-                    // compared to doing a doubling of the underlying array size
-                    // ourselves!
-                    model_buffer->neighbor_list_.push_back(neighbors[neigh]);
-                }
-            }
+            model_buffer->update_neighbor_arrays(numberOfParticles,
+                                                 modelComputeArguments);
 
             model_buffer->ml_model_->SetInputNode(
                 2, model_buffer->num_neighbors_.data(),
@@ -325,6 +299,42 @@ namespace
         double influenceDistance_;
         double cutoff_;
         int const modelWillNotRequestNeighborsOfNoncontributingParticles_;
+
+        void update_neighbor_arrays(
+            int number_of_particles,
+            KIM::ModelComputeArguments const *const modelComputeArguments)
+        {
+            int number_of_neighbors;
+            int const *neighbors;
+
+            // Clear num_neighbors and neighbor_list arrays in model buffer
+            // and populate.
+            num_neighbors_.clear();
+            neighbor_list_.clear();
+
+            for (int atom_i = 0; atom_i < number_of_particles; ++atom_i)
+            {
+                // Get number of neighbors for this atom and concatenate it
+                // onto the global number-of-neighbors list.  Then,
+                // concatenate its actual neighbors onto the global neighbor
+                // list
+                modelComputeArguments->GetNeighborList(
+                    0, atom_i, &number_of_neighbors, &neighbors);
+
+                // FIXME: Automatic vector resizing is probably slow
+                // compared to doing a doubling of the underlying array size
+                // ourselves!
+                num_neighbors_.push_back(number_of_neighbors);
+
+                for (int neigh = 0; neigh < number_of_neighbors; ++neigh)
+                {
+                    // FIXME: Automatic vector resizing is probably slow
+                    // compared to doing a doubling of the underlying array
+                    // size ourselves!
+                    neighbor_list_.push_back(neighbors[neigh]);
+                }
+            }
+        }
 
         //****************************************************************************
 #undef KIM_LOGGER_OBJECT_NAME
