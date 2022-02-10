@@ -127,11 +127,11 @@ namespace
             // arrays on heap.  These are retained in memory and are enlarged as
             // necessary to be able to fit the necessary data for any atomic
             // configuration for which compute() is called
-            num_neighbors.reserve(NUM_ATOMS_FOR_INITIAL_ARRAY_ALLOCATION);
+            num_neighbors_.reserve(NUM_ATOMS_FOR_INITIAL_ARRAY_ALLOCATION);
 
             // Raveled neighbor list for each atom in the entire current
             // configuration
-            neighbor_list.reserve(
+            neighbor_list_.reserve(
                 NUM_ATOMS_FOR_INITIAL_ARRAY_ALLOCATION *
                 NUM_NEIGHBORS_PER_ATOM_FOR_INITIAL_ARRAY_ALLOCATION);
 
@@ -235,8 +235,11 @@ namespace
                                                   3 * numberOfParticles, true);
 
             // TODO: Turn this into a private method
-            // Allocate num_neighbors and neighbor_list arrays and populate.
-            // These are stored in the model buffer
+            // Clear num_neighbors and neighbor_list arrays in model buffer and
+            // populate.
+            model_buffer->num_neighbors_.clear();
+            model_buffer->neighbor_list_.clear();
+
             for (int atom_i = 0; atom_i < numberOfParticles; ++atom_i)
             {
                 // Get number of neighbors for this atom and concatenate it onto
@@ -247,23 +250,23 @@ namespace
 
                 // FIXME: Automatic vector resizing is probably slow compared to
                 // doing a doubling of the underlying array size ourselves!
-                model_buffer->num_neighbors.push_back(numberOfNeighbors);
+                model_buffer->num_neighbors_.push_back(numberOfNeighbors);
 
                 for (int neigh = 0; neigh < numberOfNeighbors; ++neigh)
                 {
                     // FIXME: Automatic vector resizing is probably slow
                     // compared to doing a doubling of the underlying array size
                     // ourselves!
-                    model_buffer->neighbor_list.push_back(neighbors[neigh]);
+                    model_buffer->neighbor_list_.push_back(neighbors[neigh]);
                 }
             }
 
             model_buffer->ml_model_->SetInputNode(
-                2, model_buffer->num_neighbors.data(),
-                model_buffer->num_neighbors.size());
+                2, model_buffer->num_neighbors_.data(),
+                model_buffer->num_neighbors_.size());
             model_buffer->ml_model_->SetInputNode(
-                3, model_buffer->neighbor_list.data(),
-                model_buffer->neighbor_list.size());
+                3, model_buffer->neighbor_list_.data(),
+                model_buffer->neighbor_list_.size());
 
             // TODO: Generalize the Run method so that we can get more than a
             // hard-coded set of outputs back?
@@ -313,11 +316,11 @@ namespace
 
         // The number of neighbors for each atom in the entire current
         // configuration
-        std::vector<int> num_neighbors;
+        std::vector<int> num_neighbors_;
 
         // Raveled neighbor list for each atom in the entire current
         // configuration
-        std::vector<int> neighbor_list;
+        std::vector<int> neighbor_list_;
 
         double influenceDistance_;
         double cutoff_;
