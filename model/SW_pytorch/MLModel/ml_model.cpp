@@ -1,3 +1,5 @@
+#include <map>
+
 #include "ml_model.hpp"
 
 #include <torch/script.h>
@@ -16,35 +18,26 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
     // TODO: Move this if-else block for type checking to its own private
     // method? This would require making a template for it though and making
     // explicit instantiations for all possible types
-    // TODO: Is it possible/appropriate to use a type cast for this?
 
     // Get the size used by 'int' on this platform and set torch tensor type
     // appropriately
     const std::size_t platform_size_int = sizeof(int);
 
-    torch::Dtype torch_dtype;
+    std::map<int, torch::Dtype> platform_size_int_to_torch_dtype;
 
-    // TODO: Turn this into a map? Or move it to another method?
-    if (platform_size_int == 1)
-    {
-        torch_dtype = torch::kInt8;
-    }
-    else if (platform_size_int == 2)
-    {
-        torch_dtype = torch::kInt16;
-    }
-    else if (platform_size_int == 4)
-    {
-        torch_dtype = torch::kInt32;
-    }
-    else if (platform_size_int == 8)
-    {
-        torch_dtype = torch::kInt64;
-    }
+    platform_size_int_to_torch_dtype[1] = torch::kInt8;
+    platform_size_int_to_torch_dtype[2] = torch::kInt16;
+    platform_size_int_to_torch_dtype[4] = torch::kInt32;
+    platform_size_int_to_torch_dtype[8] = torch::kInt64;
+
+    torch::Dtype torch_dtype =
+        platform_size_int_to_torch_dtype[platform_size_int];
 
     torch::TensorOptions tensor_options =
         torch::TensorOptions().dtype(torch_dtype).requires_grad(requires_grad);
 
+    // Finally, create the input tensor and store it on the relevant MLModel
+    // attr
     torch::Tensor input_tensor =
         torch::from_blob(input, {size}, tensor_options);
 
