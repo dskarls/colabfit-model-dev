@@ -18,31 +18,31 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
     // explicit instantiations for all possible types
     // TODO: Is it possible/appropriate to use a type cast for this?
 
-    // Get the size used by 'int' on this platform
+    // Get the size used by 'int' on this platform and set torch tensor type
+    // appropriately
     const std::size_t platform_size_int = sizeof(int);
 
-    torch::Tensor input_tensor;
+    torch::TensorOptions tensor_options = torch::TensorOptions();
 
     if (platform_size_int == 1)
     {
-        input_tensor =
-            torch::from_blob(input, {size}, torch::dtype(torch::kInt8));
+        tensor_options.dtype(torch::kInt8);
     }
     else if (platform_size_int == 2)
     {
-        input_tensor =
-            torch::from_blob(input, {size}, torch::dtype(torch::kInt16));
+        tensor_options.dtype(torch::kInt16);
     }
     else if (platform_size_int == 4)
     {
-        input_tensor =
-            torch::from_blob(input, {size}, torch::dtype(torch::kInt32));
+        tensor_options.dtype(torch::kInt32);
     }
     else if (platform_size_int == 8)
     {
-        input_tensor =
-            torch::from_blob(input, {size}, torch::dtype(torch::kInt64));
+        tensor_options.dtype(torch::kInt64);
     }
+
+    torch::Tensor input_tensor =
+        torch::from_blob(input, {size}, tensor_options);
 
     if (requires_grad)
     {
