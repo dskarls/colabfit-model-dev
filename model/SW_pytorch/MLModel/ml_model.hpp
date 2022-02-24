@@ -43,6 +43,9 @@ private:
     torch::jit::script::Module module_;
     std::vector<torch::jit::IValue> model_inputs_;
 
+    torch::Dtype get_torch_data_type(int *);
+    torch::Dtype get_torch_data_type(double *);
+
 public:
     const char *model_file_path_;
 

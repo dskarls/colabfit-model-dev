@@ -12,13 +12,8 @@ MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
     }
 }
 
-void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
-                                bool requires_grad)
+torch::Dtype PytorchModel::get_torch_data_type(int *)
 {
-    // TODO: Move this if-else block for type checking to its own private
-    // method? This would require making a template for it though and making
-    // explicit instantiations for all possible types
-
     // Get the size used by 'int' on this platform and set torch tensor type
     // appropriately
     const std::size_t platform_size_int = sizeof(int);
@@ -32,6 +27,21 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
 
     torch::Dtype torch_dtype =
         platform_size_int_to_torch_dtype[platform_size_int];
+
+    return torch_dtype;
+}
+
+torch::Dtype PytorchModel::get_torch_data_type(double *)
+{
+    return torch::kFloat64;
+}
+
+void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
+                                bool requires_grad)
+{
+    // Map C++ data type used for the input here into the appropriate
+    // fixed-width torch data type
+    torch::Dtype torch_dtype = get_torch_data_type(input);
 
     // FIXME: Determine device to create tensor on
     torch::Device torch_device(torch::kCPU);
@@ -51,23 +61,21 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
 void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
                                 bool requires_grad)
 {
-    // TODO: Move this if-else block for type checking to its own private
-    // method? This would require making a template for it though and making
-    // explicit instantiations for all possible types
-    // TODO: Is it possible/appropriate to use a type cast for this?
+    // Map C++ data type used for the input here into the appropriate
+    // fixed-width torch data type
+    torch::Dtype torch_dtype = get_torch_data_type(input);
 
     // FIXME: Determine device to create tensor on
     torch::Device torch_device(torch::kCPU);
-    torch::TensorOptions tensor_options =
-        torch::TensorOptions().dtype(torch::kFloat64).device(torch_device);
+    torch::TensorOptions tensor_options = torch::TensorOptions()
+                                              .dtype(torch_dtype)
+                                              .requires_grad(requires_grad)
+                                              .device(torch_device);
 
+    // Finally, create the input tensor and store it on the relevant MLModel
+    // attr
     torch::Tensor input_tensor =
         torch::from_blob(input, {size}, tensor_options);
-
-    if (requires_grad)
-    {
-        input_tensor.requires_grad_();
-    }
 
     model_inputs_[model_input_index] = input_tensor;
 }
@@ -111,7 +119,8 @@ PytorchModel::PytorchModel(const char *model_file_path)
     }
 
     // FIXME: Determine device to copy model to
-    // module_.to(torch::kCPU);
+    torch::Device torch_device(torch::kCPU);
+    module_.to(torch_device);
 
     // Reserve size for the four fixed model inputs (particle_contributing,
     // coordinates, number_of_neighbors, neighbor_list)
