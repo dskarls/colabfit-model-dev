@@ -22,32 +22,31 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
     // appropriately
     const std::size_t platform_size_int = sizeof(int);
 
-    torch::TensorOptions tensor_options = torch::TensorOptions();
+    torch::Dtype torch_dtype;
 
+    // TODO: Turn this into a map? Or move it to another method?
     if (platform_size_int == 1)
     {
-        tensor_options.dtype(torch::kInt8);
+        torch_dtype = torch::kInt8;
     }
     else if (platform_size_int == 2)
     {
-        tensor_options.dtype(torch::kInt16);
+        torch_dtype = torch::kInt16;
     }
     else if (platform_size_int == 4)
     {
-        tensor_options.dtype(torch::kInt32);
+        torch_dtype = torch::kInt32;
     }
     else if (platform_size_int == 8)
     {
-        tensor_options.dtype(torch::kInt64);
+        torch_dtype = torch::kInt64;
     }
+
+    torch::TensorOptions tensor_options =
+        torch::TensorOptions().dtype(torch_dtype).requires_grad(requires_grad);
 
     torch::Tensor input_tensor =
         torch::from_blob(input, {size}, tensor_options);
-
-    if (requires_grad)
-    {
-        input_tensor.requires_grad_();
-    }
 
     model_inputs_[model_input_index] = input_tensor;
 }
