@@ -33,8 +33,12 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
     torch::Dtype torch_dtype =
         platform_size_int_to_torch_dtype[platform_size_int];
 
-    torch::TensorOptions tensor_options =
-        torch::TensorOptions().dtype(torch_dtype).requires_grad(requires_grad);
+    // FIXME: Determine device to create tensor on
+    torch::Device torch_device(torch::kCPU);
+    torch::TensorOptions tensor_options = torch::TensorOptions()
+                                              .dtype(torch_dtype)
+                                              .requires_grad(requires_grad)
+                                              .device(torch_device);
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
@@ -51,12 +55,14 @@ void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
     // method? This would require making a template for it though and making
     // explicit instantiations for all possible types
     // TODO: Is it possible/appropriate to use a type cast for this?
-    //
-    // NOTE: Support for bool input types has not been added below because of
-    // C++'s special handling of vectors of bools that causes various issues,
-    // e.g. instantiating this method template with bool will fail.
-    auto input_tensor =
-        torch::from_blob(input, {size}, torch::dtype(torch::kFloat64));
+
+    // FIXME: Determine device to create tensor on
+    torch::Device torch_device(torch::kCPU);
+    torch::TensorOptions tensor_options =
+        torch::TensorOptions().dtype(torch::kFloat64).device(torch_device);
+
+    torch::Tensor input_tensor =
+        torch::from_blob(input, {size}, tensor_options);
 
     if (requires_grad)
     {
@@ -103,6 +109,9 @@ PytorchModel::PytorchModel(const char *model_file_path)
                      "pytorch model file from path "
                   << model_file_path << std::endl;
     }
+
+    // FIXME: Determine device to copy model to
+    // module_.to(torch::kCPU);
 
     // Reserve size for the four fixed model inputs (particle_contributing,
     // coordinates, number_of_neighbors, neighbor_list)
