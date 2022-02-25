@@ -36,6 +36,10 @@ torch::Dtype PytorchModel::get_torch_data_type(double *)
     return torch::kFloat64;
 }
 
+// TODO: Find a way to template SetInputNode...there are multiple definitions
+// below that are exactly the same.  Since even derived implementations are
+// virtual functions are also virtual, we can't use regular C++ templates.  Is
+// it worth using the preprocessor for this?
 void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
                                 bool requires_grad)
 {
@@ -44,16 +48,14 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
     torch::Dtype torch_dtype = get_torch_data_type(input);
 
     // FIXME: Determine device to create tensor on
-    torch::Device torch_device(torch::kCPU);
-    torch::TensorOptions tensor_options = torch::TensorOptions()
-                                              .dtype(torch_dtype)
-                                              .requires_grad(requires_grad)
-                                              .device(torch_device);
+    torch::TensorOptions tensor_options =
+        torch::TensorOptions().dtype(torch_dtype).requires_grad(requires_grad);
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
+    torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
-        torch::from_blob(input, {size}, tensor_options);
+        torch::from_blob(input, {size}, tensor_options).to(torch_device);
 
     model_inputs_[model_input_index] = input_tensor;
 }
@@ -66,41 +68,46 @@ void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
     torch::Dtype torch_dtype = get_torch_data_type(input);
 
     // FIXME: Determine device to create tensor on
-    torch::Device torch_device(torch::kCPU);
-    torch::TensorOptions tensor_options = torch::TensorOptions()
-                                              .dtype(torch_dtype)
-                                              .requires_grad(requires_grad)
-                                              .device(torch_device);
+    torch::TensorOptions tensor_options =
+        torch::TensorOptions().dtype(torch_dtype).requires_grad(requires_grad);
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
+    torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
-        torch::from_blob(input, {size}, tensor_options);
+        torch::from_blob(input, {size}, tensor_options).to(torch_device);
 
     model_inputs_[model_input_index] = input_tensor;
 }
 
 void PytorchModel::Run(double *energy, double *forces)
 {
+    // FIXME: Make this work for arbitrary number/type of outputs?  This may
+    // lead us to make Run() take no parameters, and instead define separate
+    // methods for accessing each of the outputs of the ML model.
+
     // Run ML model's `forward` method and retrieve outputs as tuple
+    // IMPORTANT: We require that the pytorch model's `forward`
+    // method return a tuple where the energy is the first entry and
+    // the forces are the second
     const auto output_tensor_list =
         module_.forward(model_inputs_).toTuple()->elements();
 
-    // Copy value of energy from first tensor outputted by model
-    *energy = *output_tensor_list[0].toTensor().data_ptr<double>();
+    // After moving the first output tensor back to the CPU (if necessary),
+    // extract its value as the partial energy
+    *energy =
+        *output_tensor_list[0].toTensor().to(torch::kCPU).data_ptr<double>();
 
-    auto torch_forces = output_tensor_list[1].toTensor();
+    // After moving the second output tensor back to the CPU (if necessary),
+    // extract its contents as the partial forces
+    auto torch_forces = output_tensor_list[1].toTensor().to(torch::kCPU);
+
+    // TODO: Move the accessor data extraction to a separate private method
     auto force_accessor = torch_forces.accessor<double, 1>();
     for (int atom_count = 0; atom_count < force_accessor.size(0); ++atom_count)
     {
         forces[atom_count] = force_accessor[atom_count];
     }
-    // torch::Tensor output_tensor = module_.forward(model_inputs_).toTuple();
-
-    // FIXME: Make this work for more than a single scalar output -- each
-    // output can presumably have a different type, too.  This may lead us to
-    // make Run() take no parameters, and instead define separate methods for
-    // accessing each of the outputs of the ML model.
 }
 
 PytorchModel::PytorchModel(const char *model_file_path)
@@ -119,7 +126,7 @@ PytorchModel::PytorchModel(const char *model_file_path)
     }
 
     // FIXME: Determine device to copy model to
-    torch::Device torch_device(torch::kCPU);
+    torch::Device torch_device(torch::kCUDA, 0);
     module_.to(torch_device);
 
     // Reserve size for the four fixed model inputs (particle_contributing,
