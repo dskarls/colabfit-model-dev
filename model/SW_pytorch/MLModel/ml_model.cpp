@@ -162,4 +162,10 @@ PytorchModel::PytorchModel(const char *model_file_path, const char *device_name)
     module_.eval();
 }
 
-PytorchModel::~PytorchModel() { delete device_; }
+PytorchModel::~PytorchModel()
+{
+    if (device_ != nullptr)
+    {
+        delete device_;
+    }
+}
