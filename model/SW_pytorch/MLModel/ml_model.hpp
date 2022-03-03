@@ -17,13 +17,12 @@ class MLModel
 {
 public:
     static MLModel *create(const char * /*model_file_path*/,
-                           MLModelType /*ml_model_type*/);
+                           MLModelType /*ml_model_type*/,
+                           const char * /*device_name*/);
 
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
     // torchscript file.
-
-    virtual void SetExecutionDevice(const std::string /*device_name*/) = 0;
 
     // Function templates can't be used for pure virtual functions, and since
     // SetInputNode and Run each have their own (different) support argument
@@ -50,12 +49,14 @@ private:
     torch::Dtype get_torch_data_type(int *);
     torch::Dtype get_torch_data_type(double *);
 
+    void SetExecutionDevice(const char * /*device_name*/);
+
 public:
     const char *model_file_path_;
 
-    PytorchModel(const char * /*model_file_path*/);
+    PytorchModel(const char * /*model_file_path*/,
+                 const char * /*device_name*/);
 
-    void SetExecutionDevice(const std::string /*device_name*/);
     void SetInputNode(int /*model_input_index*/, int * /*input*/, int /*size*/,
                       bool requires_grad = false);
     void SetInputNode(int /*model_input_index*/, double * /*input*/,

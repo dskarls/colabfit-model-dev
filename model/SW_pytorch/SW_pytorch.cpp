@@ -50,6 +50,8 @@
 #define NUM_ATOMS_FOR_INITIAL_ARRAY_ALLOCATION 1000
 #define NUM_NEIGHBORS_PER_ATOM_FOR_INITIAL_ARRAY_ALLOCATION 50
 
+#define KIM_DEVICE_ENV_VAR "KIM_MODEL_EXECUTION_DEVICE"
+
 namespace
 {
     class KIMMLModel
@@ -120,7 +122,9 @@ namespace
 
             // Create ML wrapper object
             LOG_DEBUG("Creating ML framework wrapper object");
-            ml_model_ = MLModel::create(model, ML_MODEL_PYTORCH);
+
+            ml_model_ = MLModel::create(model, ML_MODEL_PYTORCH,
+                                        std::getenv(KIM_DEVICE_ENV_VAR));
             LOG_DEBUG("Done creating ML framework wrapper object");
 
             // Create initial empty arrays for num_neighbors and neighbor_list

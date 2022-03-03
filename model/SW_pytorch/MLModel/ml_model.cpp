@@ -4,16 +4,26 @@
 
 #include <torch/script.h>
 
-MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
+MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type,
+                         const char *device_name)
 {
     if (ml_model_type == ML_MODEL_PYTORCH)
     {
-        return new PytorchModel(model_file_path);
+        return new PytorchModel(model_file_path, device_name);
     }
+    // FIXME: raise an exception here if ``ml_model_type`` doesn't match any
+    // known enumerations
 }
 
-void PytorchModel::SetExecutionDevice(const std::string device_name)
-{
+void PytorchModel::SetExecutionDevice(const char *device_name)
+{ // Use the requested device name char array to create a torch Device object
+
+    // Default to 'cpu'
+    if (device_name == nullptr)
+    {
+        device_name = "cpu";
+    }
+
     torch::Device torch_device(device_name);
     device_ = &torch_device;
 };
@@ -59,7 +69,6 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
-    // torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
         torch::from_blob(input, {size}, tensor_options).to(*device_);
 
@@ -79,7 +88,6 @@ void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
-    // torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
         torch::from_blob(input, {size}, tensor_options).to(*device_);
 
@@ -116,7 +124,7 @@ void PytorchModel::Run(double *energy, double *forces)
     }
 }
 
-PytorchModel::PytorchModel(const char *model_file_path)
+PytorchModel::PytorchModel(const char *model_file_path, const char *device_name)
 {
     model_file_path_ = model_file_path;
     try
@@ -131,10 +139,9 @@ PytorchModel::PytorchModel(const char *model_file_path)
                   << model_file_path << std::endl;
     }
 
-    // FIXME: Determine device to copy model to via env
-    // torch::Device torch_device(torch::kCUDA, 0);
-    SetExecutionDevice("cpu");
+    SetExecutionDevice(device_name);
 
+    // Copy model to execution device
     module_.to(*device_);
 
     // Reserve size for the four fixed model inputs (particle_contributing,
