@@ -148,7 +148,7 @@ namespace
         //****************************************************************************
         ~KIMMLModel()
         {
-            if (ml_model_ != NULL)
+            if (ml_model_ != nullptr)
             {
                 delete ml_model_;
             }
@@ -167,7 +167,7 @@ namespace
                 reinterpret_cast<void **>(&model_buffer));
 
             LOG_DEBUG("Deallocating model buffer");
-            if (model_buffer != NULL)
+            if (model_buffer != nullptr)
             {
                 // FIXME: Will deallocating the MLModel object prevent other
                 // active model objects from continuing their inference?  I
