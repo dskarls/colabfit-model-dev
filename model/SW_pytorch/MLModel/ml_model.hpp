@@ -2,6 +2,7 @@
 #define MLMODEL_HPP
 
 #include <stdlib.h>
+#include <vector>
 
 #include <torch/script.h>
 
