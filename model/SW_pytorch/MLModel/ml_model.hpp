@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <string>
 
 #include <torch/script.h>
 
@@ -21,6 +22,8 @@ public:
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
     // torchscript file.
+
+    virtual void SetExecutionDevice(const std::string /*device_name*/) = 0;
 
     // Function templates can't be used for pure virtual functions, and since
     // SetInputNode and Run each have their own (different) support argument
@@ -42,6 +45,7 @@ class PytorchModel : public MLModel
 private:
     torch::jit::script::Module module_;
     std::vector<torch::jit::IValue> model_inputs_;
+    torch::Device *device_;
 
     torch::Dtype get_torch_data_type(int *);
     torch::Dtype get_torch_data_type(double *);
@@ -51,6 +55,7 @@ public:
 
     PytorchModel(const char * /*model_file_path*/);
 
+    void SetExecutionDevice(const std::string /*device_name*/);
     void SetInputNode(int /*model_input_index*/, int * /*input*/, int /*size*/,
                       bool requires_grad = false);
     void SetInputNode(int /*model_input_index*/, double * /*input*/,

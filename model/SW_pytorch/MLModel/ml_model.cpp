@@ -12,6 +12,12 @@ MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type)
     }
 }
 
+void PytorchModel::SetExecutionDevice(const std::string device_name)
+{
+    torch::Device torch_device(device_name);
+    device_ = &torch_device;
+};
+
 torch::Dtype PytorchModel::get_torch_data_type(int *)
 {
     // Get the size used by 'int' on this platform and set torch tensor type
@@ -53,9 +59,9 @@ void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
-    torch::Device torch_device(torch::kCUDA, 0);
+    // torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
-        torch::from_blob(input, {size}, tensor_options).to(torch_device);
+        torch::from_blob(input, {size}, tensor_options).to(*device_);
 
     model_inputs_[model_input_index] = input_tensor;
 }
@@ -73,9 +79,9 @@ void PytorchModel::SetInputNode(int model_input_index, double *input, int size,
 
     // Finally, create the input tensor and store it on the relevant MLModel
     // attr
-    torch::Device torch_device(torch::kCUDA, 0);
+    // torch::Device torch_device(torch::kCUDA, 0);
     torch::Tensor input_tensor =
-        torch::from_blob(input, {size}, tensor_options).to(torch_device);
+        torch::from_blob(input, {size}, tensor_options).to(*device_);
 
     model_inputs_[model_input_index] = input_tensor;
 }
@@ -125,9 +131,11 @@ PytorchModel::PytorchModel(const char *model_file_path)
                   << model_file_path << std::endl;
     }
 
-    // FIXME: Determine device to copy model to
-    torch::Device torch_device(torch::kCUDA, 0);
-    module_.to(torch_device);
+    // FIXME: Determine device to copy model to via env
+    // torch::Device torch_device(torch::kCUDA, 0);
+    SetExecutionDevice("cpu");
+
+    module_.to(*device_);
 
     // Reserve size for the four fixed model inputs (particle_contributing,
     // coordinates, number_of_neighbors, neighbor_list)
