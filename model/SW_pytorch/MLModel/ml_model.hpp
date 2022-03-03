@@ -2,8 +2,6 @@
 #define MLMODEL_HPP
 
 #include <stdlib.h>
-#include <iostream>
-#include <string>
 
 #include <torch/script.h>
 
@@ -18,7 +16,7 @@ class MLModel
 public:
     static MLModel *create(const char * /*model_file_path*/,
                            MLModelType /*ml_model_type*/,
-                           const char * /*device_name*/);
+                           const char *const /*device_name*/);
 
     // TODO: Should we use named inputs instead?  I believe they're required
     // by ONNX, but not sure exactly how they work vis-a-vis exporting to a
@@ -55,7 +53,7 @@ public:
     const char *model_file_path_;
 
     PytorchModel(const char * /*model_file_path*/,
-                 const char * /*device_name*/);
+                 const char *const /*device_name*/);
 
     void SetInputNode(int /*model_input_index*/, int * /*input*/, int /*size*/,
                       bool requires_grad = false);

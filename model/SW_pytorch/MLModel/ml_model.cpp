@@ -1,11 +1,12 @@
 #include <map>
+#include <string>
 
 #include "ml_model.hpp"
 
 #include <torch/script.h>
 
 MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type,
-                         const char *device_name)
+                         const char *const device_name)
 {
     if (ml_model_type == ML_MODEL_PYTORCH)
     {
@@ -15,17 +16,25 @@ MLModel *MLModel::create(const char *model_file_path, MLModelType ml_model_type,
     // known enumerations
 }
 
-void PytorchModel::SetExecutionDevice(const char *device_name)
-{ // Use the requested device name char array to create a torch Device object
+void PytorchModel::SetExecutionDevice(const char *const device_name)
+{
+    // Use the requested device name char array to create a torch Device
+    // object.  Generally, the ``device_name`` parameter is going to come
+    // from a call to std::getenv(), so it is defined as const.
+
+    std::string device_name_as_str;
 
     // Default to 'cpu'
     if (device_name == nullptr)
     {
-        device_name = "cpu";
+        device_name_as_str = "cpu";
+    }
+    else
+    {
+        device_name_as_str = device_name;
     }
 
-    torch::Device torch_device(device_name);
-    device_ = &torch_device;
+    device_ = new torch::Device(device_name_as_str);
 };
 
 torch::Dtype PytorchModel::get_torch_data_type(int *)
@@ -153,4 +162,4 @@ PytorchModel::PytorchModel(const char *model_file_path, const char *device_name)
     module_.eval();
 }
 
-PytorchModel::~PytorchModel() {}
+PytorchModel::~PytorchModel() { delete device_; }
