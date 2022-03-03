@@ -146,6 +146,7 @@ PytorchModel::PytorchModel(const char *model_file_path, const char *device_name)
         std::cerr << "ERROR: An error occurred while attempting to load the "
                      "pytorch model file from path "
                   << model_file_path << std::endl;
+        throw;
     }
 
     SetExecutionDevice(device_name);
