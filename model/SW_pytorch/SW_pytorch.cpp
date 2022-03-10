@@ -236,6 +236,11 @@ namespace
             model_buffer->ml_model_->SetInputNode(1, coordinates,
                                                   3 * numberOfParticles, true);
 
+            // TODO: We could save a decent bit of work if there were a way for
+            // the model to know whether the neighbor list has changed since
+            // the last call to its Compute.  Of course, the model could do
+            // this itself by checking the neighbor skin, but perhaps a
+            // mechanism in the KIM API is possible.
             model_buffer->update_neighbor_arrays(numberOfParticles,
                                                  modelComputeArguments);
 
