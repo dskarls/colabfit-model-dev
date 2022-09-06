@@ -62,7 +62,7 @@ torch::Dtype PytorchModel::get_torch_data_type(double *)
 }
 
 // TODO: Find a way to template SetInputNode...there are multiple definitions
-// below that are exactly the same.  Since even derived implementations are
+// below that are exactly the same.  Since even derived implementations of
 // virtual functions are also virtual, we can't use regular C++ templates.  Is
 // it worth using the preprocessor for this?
 void PytorchModel::SetInputNode(int model_input_index, int *input, int size,
